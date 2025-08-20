@@ -1,0 +1,5 @@
+app_name: myapp
+repo_url: "https://github.com/username/repository.git"
+repo_branch: "main"
+app_path: "/var/www/myapp"
+service_name: "web"
