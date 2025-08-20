@@ -1,0 +1,41 @@
+---
+- name: Dockerized App Deployment
+  hosts: all
+  gather_facts: false
+  vars:
+    app_name: myapp
+    repo_url: "https://github.com/username/repository.git"
+    repo_branch: "main"
+    app_path: "/var/www/{{ app_name }}"
+    service_name: "web"   # adjust to match docker compose service
+
+  tasks:
+    - name: Ensure app directory exists
+      file:
+        path: "{{ app_path }}"
+        state: directory
+
+    - name: Clone or update repository
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ app_path }}"
+        version: "{{ repo_branch }}"
+        force: true
+
+    - name: Stop existing containers
+      shell: docker compose stop {{ service_name }}
+      args:
+        chdir: "{{ app_path }}"
+
+    - name: Remove containers
+      shell: docker compose rm -f {{ service_name }}
+      args:
+        chdir: "{{ app_path }}"
+
+    - name: Prune unused images
+      shell: docker image prune -af
+
+    - name: Start containers with rebuild
+      shell: docker compose up -d --build {{ service_name }}
+      args:
+        chdir: "{{ app_path }}"
